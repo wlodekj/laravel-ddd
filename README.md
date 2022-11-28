@@ -16,12 +16,34 @@ Martin Fowler
 
 ### Laravel Eloquent
 
-- app/Core/FormEloquent
+It's a challenge to build "anemic" domain model with Active record pattern used by laravel. You have to apply rules and be strict
+about following them to not "leak" implementation to laravel factory methods etc. It's also not possible to use all laravel
+built-in features. However, it's worth investing in keeping your domain logic in one place and not have it in multiple files
+(controllers, models, services etc.)
 
-CQRS
+Files namespace: app/Core/FormEloquent
 
-- Jobs (Command) to create, update, delete objects [CreateFormJob.php](app/Core/FormEloquent/Jobs/CreateFormJob.php)
-- Query to retrieve data from DB
+**CQRS**
+
+Jobs (Command) to create, update, delete objects 
+
+- Every change in db should be represented by a Command
+- Always keep jobs simple and pass primitives (no Eloquent objects!). For batch jobs use an array of DTO's
+- Jobs are a great way to show what your app is doing (it's kind of a map of your application actions if implemented 
+correctly which can also serve as a documentation
+- [CreateFormEloquentJob.php](app/Core/FormEloquent/Jobs/CreateFormEloquentJob.php)
+- [CreateFormEloquentJobHandler.php](app/Core/FormEloquent/Jobs/CreateFormEloquentJobHandler.php)
+- Mapping in [JobServiceProvider.php](app/Providers/JobServiceProvider.php)
+
+Query to retrieve data from DB
+
+- Reads are expensive operations
+- Depends on the context you might need different data (Admin, User, CustomerSupport)
+- Simple DTO's to pass data from Query to UserInterface
+- Simple queries (no Active Record or ORM)
+- With proper inversion of control some part of the application can use DB and Elastic just by replacing 
+implementation of an interface
+- Performance comparison: [Eloquent vs DB](https://devsenv.com/tutorials/laravel-eloquent-vs-db-query-builder-performance-and-other-statistics) 
 
 Domain
 
@@ -29,7 +51,7 @@ Domain
 
 Tests
 
-- Unit [FormEloquentTest.php](test/)
+- Unit [FormEloquentTest.php](tests/Unit/Core/FormEloquent/FormEloquentTest.php)
 
 
 ### Laravel Doctrine
